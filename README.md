@@ -1,0 +1,2 @@
+# InfoTeorija
+ nd
