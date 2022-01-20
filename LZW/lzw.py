@@ -27,9 +27,9 @@ if __name__ == "__main__":
     encoding = LZWEncoding(path, bits)
     encoded_path = encoding.lzw_compress()
     print(f'Compressed to {encoded_path}')
-    print(f'Before compress: {os.path.getsize(path)}')
-    print(f'After compress:  {os.path.getsize(encoded_path)}')
-    print(f"--- {time.time() - start_time:.3f} seconds ---")
+    print(f'Before compresssion: {os.path.getsize(path)}')
+    print(f'After compresssion:  {os.path.getsize(encoded_path)}')
+    print(f"Compression time: {time.time() - start_time:.3f} seconds, compression ratio: {os.path.getsize(path) / os.path.getsize(encoded_path):.3f}")
 
     #decoding
     start_time = time.time()
@@ -38,6 +38,6 @@ if __name__ == "__main__":
     decoding = LZWDecoding(encoded_file)
     decoding.lzw_decompress(decoded_file)
     print(f'Decompressed to {decoded_file}')
-    print(f'Before decompress:     {os.path.getsize(encoded_file)}')
-    print(f'After Decompressed:  {os.path.getsize(decoded_file)}')
-    print(f"--- {time.time() - start_time:.3f} seconds ---")
+    print(f'Before decompression:     {os.path.getsize(encoded_file)}')
+    print(f'After Decompresssion:  {os.path.getsize(decoded_file)}')
+    print(f"Decompression time: {time.time() - start_time:.3f} seconds")
