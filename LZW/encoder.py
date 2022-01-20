@@ -24,7 +24,7 @@ class LZWEncoding:
                 for byte in chunk:
                     new_word = word + byte.to_bytes(1, byteorder='big') # adds one more letter to current word
 
-                    if self.dictionaryLength == (2**self.bitLength-1) and self.bitLength != 8: # if dictionary is full
+                    if self.dictionaryLength == (2**self.bitLength-1): # if dictionary is full
                         self.keys = ASCII_TO_INT.copy() # reset the dictionary
                         self.dictionaryLength = len(ASCII_TO_INT)
 

@@ -5,49 +5,47 @@ from encoder import ASCII_TO_INT
 
 INT_TO_ASCII: dict = {i: b for b, i in ASCII_TO_INT.items()}  # for decoding
 
-
-
 class LZWDecoding:
 
     def __init__(self, encoded_path):
         self.reverse_lzw_mapping = INT_TO_ASCII.copy()
-        self.rev_keys = len(INT_TO_ASCII)
+        self.dictionaryLength = len(INT_TO_ASCII)
         self.encoded_path = encoded_path
-
     def lzw_decompress(self, output_path):
         with open(self.encoded_path, 'rb') as file, open(output_path, 'wb') as output:
             buffer = bitarray()
+            decoded_text = bytearray()
+
             buffer.frombytes(file.read())
             data = buffer.to01()
+
             padding = int(data[:3], 2)
             data = data[3 + padding:]
             self.bitLength = int(data[:8], 2) # first byte contains bit length for encoding
             allkeys = data[8:]
-            decoded_text = bytearray()
-            previous = -1
-            pos = 0
-            keys = []
+
+            pos = self.bitLength
+            previous = int(allkeys[0:0 + self.bitLength], 2) 
+            decoded_text.extend(self.reverse_lzw_mapping[previous]) # first byte is always the same
+
             while pos != len(allkeys):
-                if self.rev_keys == (2 ** self.bitLength-1) and self.bitLength != 8:  # init dictionary
-                    self.reverse_lzw_mapping = INT_TO_ASCII.copy()
-                    self.rev_keys = len(INT_TO_ASCII)
+                if self.dictionaryLength == (2 ** self.bitLength-1):  # if dictionary is full
+                    self.reverse_lzw_mapping = INT_TO_ASCII.copy() # reset dictionary to original
+                    self.dictionaryLength = len(INT_TO_ASCII)
 
 
-                key = int(allkeys[pos:pos + self.bitLength], 2)  # read as many bits as encoded dynamically
-                keys.append(key)
-
-                if previous == -1:
-                    previous = key
+                key = int(allkeys[pos:pos + self.bitLength], 2)  # read from current position to defined bit length, starts at second word
+                if key != self.dictionaryLength: # key is not a new one
+                    word = self.reverse_lzw_mapping[previous] + self.reverse_lzw_mapping[key][0:1] # take previous word and add the first char of a new word to it
                 else:
-                    if key != self.rev_keys:
-                        word = self.reverse_lzw_mapping[previous] + self.reverse_lzw_mapping[key][0:1]
-                    else:
-                        word = self.reverse_lzw_mapping[previous] + self.reverse_lzw_mapping[previous][0:1]
-                    self.reverse_lzw_mapping[self.rev_keys] = word
-                    self.rev_keys += 1
-                    previous = key
+                    word = self.reverse_lzw_mapping[previous] + self.reverse_lzw_mapping[previous][0:1]
+
+                self.reverse_lzw_mapping[self.dictionaryLength] = word
+                self.dictionaryLength += 1
+                previous = key
+
                 decoded_text.extend(self.reverse_lzw_mapping[key])
                 pos += self.bitLength
 
-            output.write(decoded_text)  # write to file
+            output.write(decoded_text)
             print("LZW Decompressed")
