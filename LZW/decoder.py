@@ -19,8 +19,8 @@ class LZWDecoding:
             buffer.frombytes(file.read())
             data = buffer.to01()
 
-            padding = int(data[:3], 2)
-            data = data[3 + padding:]
+            padding = int(data[:4], 2)
+            data = data[4 + padding:]
             self.bitLength = int(data[:8], 2) # first byte contains bit length for encoding
             allkeys = data[8:]
 

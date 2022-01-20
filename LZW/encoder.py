@@ -40,8 +40,8 @@ class LZWEncoding:
             if word in self.keys:  # for last word
                 bits.extend(bin(self.keys[word])[2:].zfill(self.bitLength))
 
-            p = 8 - (len(bits) + 3) % 8
-            padding = f'{p:08b}'[-3:] + p*'0'
+            p = 8 - (len(bits) + 4) % 8
+            padding = f'{p:08b}'[-4:] + p*'0'
             temp = bitarray(padding)
             temp.extend(bits)
             temp.tofile(output)
