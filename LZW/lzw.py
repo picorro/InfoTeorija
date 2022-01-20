@@ -17,8 +17,8 @@ path = args.path
 bits = int(args.bits)
 
 if __name__ == "__main__":
-    if bits < 8 or bits > 15:
-        sys.exit('Library size is set incorrectly, bits should be between 8 and 15')
+    if bits < 9 or bits > 16:
+        sys.exit('Library size is set incorrectly, bits should be between 9 and 16')
 
     filename, file_extension = os.path.splitext(path)
 
@@ -39,5 +39,5 @@ if __name__ == "__main__":
     decoding.lzw_decompress(decoded_file)
     print(f'Decompressed to {decoded_file}')
     print(f'Before decompression:     {os.path.getsize(encoded_file)}')
-    print(f'After Decompresssion:  {os.path.getsize(decoded_file)}')
+    print(f'After decompresssion:  {os.path.getsize(decoded_file)}')
     print(f"Decompression time: {time.time() - start_time:.3f} seconds")

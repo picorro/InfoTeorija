@@ -24,23 +24,21 @@ class LZWEncoding:
                 for byte in chunk:
                     new_word = word + byte.to_bytes(1, byteorder='big') # adds one more letter to current word
 
-                    if self.dictionaryLength == (2**self.bitLength-1): # if dictionary is full
+                    if self.dictionaryLength == (2**self.bitLength-1) and self.bitLength != 8: # if dictionary is full
                         self.keys = ASCII_TO_INT.copy() # reset the dictionary
-                        self.dictionaryLength = len(ASCII_TO_INT) # reset dictionary length
+                        self.dictionaryLength = len(ASCII_TO_INT)
 
                     if new_word in self.keys: # if word is currently in the dictionary
                         word = new_word
                     else: # word is not in the dictionary
-                        number_of_bits = utils.number_of_bits(self.dictionaryLength, 2**self.bitLength) # this seems to return one higher than the bit count but I am not sure yet how it affects stuff
-                        bits.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
+                        bits.extend(bin(self.keys[word])[2:].zfill(self.bitLength))
                         self.keys[new_word] = self.dictionaryLength # add word to the dictionary
                         self.dictionaryLength += 1
                         word = byte.to_bytes(1, byteorder='big') # converts word into one byte
 
 
             if word in self.keys:  # for last word
-                number_of_bits = utils.number_of_bits(self.dictionaryLength, 2**self.bitLength)
-                bits.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
+                bits.extend(bin(self.keys[word])[2:].zfill(self.bitLength))
 
             p = 8 - (len(bits) + 3) % 8
             padding = f'{p:08b}'[-3:] + p*'0'
