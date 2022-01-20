@@ -17,8 +17,8 @@ path = args.path
 bits = int(args.bits)
 
 if __name__ == "__main__":
-    if bits < 9 or bits > 15:
-        sys.exit('Library size is set incorrectly, bits should be between 9 and 15')
+    if bits < 8 or bits > 15:
+        sys.exit('Library size is set incorrectly, bits should be between 8 and 15')
 
     filename, file_extension = os.path.splitext(path)
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     print(f'Compressed to {encoded_path}')
     print(f'Before compresssion: {os.path.getsize(path)}')
     print(f'After compresssion:  {os.path.getsize(encoded_path)}')
-    print(f"Compression time: {time.time() - start_time:.3f} seconds, compression ratio: {os.path.getsize(path) / os.path.getsize(encoded_path):.3f}")
+    print(f"Compression time: {time.time() - start_time:.3f} seconds, compression ratio: {os.path.getsize(path) / os.path.getsize(encoded_path):.3f}\n")
 
     #decoding
     start_time = time.time()

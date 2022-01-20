@@ -2,63 +2,49 @@ import os
 import utils
 from bitarray import bitarray
 
-ASCII_TO_INT: dict = {i.to_bytes(1, 'big'): i for i in range(256)}  # for encoding
-
-
-
+ASCII_TO_INT: dict = {i.to_bytes(1, 'big'): i for i in range(256)}  # starting dictionary contains all ascii characters, words are keys, and numbers are values
 
 class LZWEncoding:
-    def __init__(self, path, param):
-        """
-        :param path: file path to compress
-        :param param: max dictionary size
-        """
+    def __init__(self, path, bitLength): # param^2 is max dictionary size
         self.path = path
-        self.keys = ASCII_TO_INT.copy()  # key = bytes
-        self.n_keys = len(ASCII_TO_INT)  # length of dictionary
-        self.param = param
+        self.keys = ASCII_TO_INT.copy()  # key = byte
+        self.dictionaryLength = len(ASCII_TO_INT)  # length of dictionary, starts at 256
+        self.bitLength = bitLength
 
     def lzw_compress(self):
-        """
-        compress the file located in self.path using lzw.
-        :return: output_path. saving the compressed data into filename + ".lzw"
-        """
-        filename, file_extension = os.path.splitext(self.path)
-        output_path = filename + ".lzw"
-        data = utils.yield_from_file(self.path)
-        dec = bitarray()
-        word = b''
+        filename, file_extension = os.path.splitext(self.path) # splits file name from extension
+        output_path = filename + ".lzw" # adds lzw extension to encoded file
+        data = utils.yield_from_file(self.path) # extracts file contents
+        bits = bitarray()
+        word = b'' # b for binary
 
         with open(output_path, 'wb') as output:
-            dec.extend(bin(self.param)[2:].zfill(8))
+            bits.extend(bin(self.bitLength)[2:].zfill(8)) # add encoding bit amount to file
             for chunk in data:
                 for byte in chunk:
+                    new_word = word + byte.to_bytes(1, byteorder='big') # adds one more letter to current word
 
-                    new_word = word + byte.to_bytes(1, byteorder='big')
-                    if self.n_keys == (2**self.param-1) and self.param != 8:
-                        self.keys = ASCII_TO_INT.copy()  # key = bytes
-                        self.n_keys = len(ASCII_TO_INT)  # length of dictionary
+                    if self.dictionaryLength == (2**self.bitLength-1): # if dictionary is full
+                        self.keys = ASCII_TO_INT.copy() # reset the dictionary
+                        self.dictionaryLength = len(ASCII_TO_INT) # reset dictionary length
 
-                    if new_word in self.keys:
+                    if new_word in self.keys: # if word is currently in the dictionary
                         word = new_word
-                    else:
+                    else: # word is not in the dictionary
+                        number_of_bits = utils.number_of_bits(self.dictionaryLength, 2**self.bitLength) # this seems to return one higher than the bit count but I am not sure yet how it affects stuff
+                        bits.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
+                        self.keys[new_word] = self.dictionaryLength # add word to the dictionary
+                        self.dictionaryLength += 1
+                        word = byte.to_bytes(1, byteorder='big') # converts word into one byte
 
-                        number_of_bits = utils.number_of_bits(self.n_keys, 2**self.param)
-                        dec.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
-                        self.keys[new_word] = self.n_keys
-                        self.n_keys += 1
-                        word = byte.to_bytes(1, byteorder='big')
 
+            if word in self.keys:  # for last word
+                number_of_bits = utils.number_of_bits(self.dictionaryLength, 2**self.bitLength)
+                bits.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
 
-            if word in self.keys:  # for last string
-                number_of_bits = utils.number_of_bits(self.n_keys, 2**self.param)
-                dec.extend(bin(self.keys[word])[2:].zfill(number_of_bits))
-
-            p = 8 - (len(dec)+3)%8
+            p = 8 - (len(bits) + 3) % 8
             padding = f'{p:08b}'[-3:] + p*'0'
             temp = bitarray(padding)
-            temp.extend(dec)
+            temp.extend(bits)
             temp.tofile(output)
-
-        print("LZW Compressed")
         return output_path
